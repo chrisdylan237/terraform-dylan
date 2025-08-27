@@ -1,13 +1,34 @@
 provider "aws" {
-  region = "us-east-1" # Change to your desired region
+  region = var.aws_region
 }
 
 resource "aws_instance" "terraform_dylan" {
-  ami           = "ami-00ca32bbc84273381"
-  instance_type = "t2.small"
-  key_name      = "terraform"
+  ami           = var.instance_ami
+  instance_type = var.instance_type
+  key_name      = var.key_name
 
   tags = {
-    Name = "terraform-dylan"
+    Name = var.instance_name
+  }
+}
+
+# Random ID for uniqueness
+
+resource "random_id" "randomness" {
+  byte_length = 16
+}
+
+locals {
+  bucket_name = "dylan"
+  environment = "dev"
+  project     = "s3bucket"
+}
+
+resource "aws_s3_bucket" "terraform_dylan_bucket" {
+  bucket = "${local.bucket_name}-${random_id.randomness.hex}"
+
+  tags = {
+    Name        = "${local.project}-bucket"
+    Environment = local.environment
   }
 }
